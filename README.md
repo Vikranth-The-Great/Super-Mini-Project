@@ -1,6 +1,6 @@
 # Food Waste Management System (MERN)
 
-This folder contains the MERN conversion of the original PHP + MySQL project.
+A modern full-stack web application for managing food donations and waste reduction.
 
 ## Stack
 
@@ -42,15 +42,13 @@ This folder contains the MERN conversion of the original PHP + MySQL project.
 - Feedback: `/api/feedback/*`
 - Analytics: `/api/analytics`
 
-## Feature Mapping from Old System
+## Features
 
-- User signup/signin/profile/donate migrated
-- Admin dashboard/profile/analytics/location-filter/feedback migrated
-- Delivery login/signup/available orders/my orders/open map migrated
-- Contact + FAQ + chatbot migrated
+- User authentication and profile management
+- Food donation listing and tracking
+- Admin dashboard with analytics
+- Delivery person management and order tracking
+- Real-time notifications
+- Multi-language support (English, Hindi, Kannada)
+- Role-based access control (User, Admin, Delivery)
 
-## Notes
-
-- Old PHP, HTML, and CSS files are untouched.
-- MERN code lives entirely under this `mern/` directory.
-- You can later phase out old files after full testing and deployment.
