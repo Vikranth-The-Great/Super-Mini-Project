@@ -2,12 +2,38 @@
   "name": "food-waste-management-mern",
   "private": true,
   "version": "1.0.0",
-  "description": "MERN monorepo for Food Waste Management System",
+  "description": "MERN monorepo for Food Waste Management System with web and mobile frontends",
   "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client && npm install --prefix apps/mobile && npm install",
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "install:all": "npm install --prefix server && npm install --prefix client"
+    "dev:web": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "dev:mobile": "npm run start --prefix apps/mobile",
+    "dev:mobile:android": "npm run start:android --prefix apps/mobile",
+    "dev:all": "concurrently \"npm run dev:server\" \"npm run dev:web\" \"npm run dev:mobile\"",
+    "build:web": "npm run build --prefix client",
+    "build:mobile": "npm run build:android --prefix apps/mobile",
+    "test:server": "npm run test --prefix server",
+    "test": "npm run test:server"
+  },
+  "workspaces": [
+    "server",
+    "client",
+    "apps/server",
+    "apps/web",
+    "apps/mobile",
+    "packages/shared"
+  ],
+  "overrides": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "dependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
   }
 }
+

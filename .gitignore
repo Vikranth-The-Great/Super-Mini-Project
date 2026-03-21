@@ -21,3 +21,5 @@ coverage/
 .DS_Store
 Thumbs.db
 .vscode/
+.expo/
+apps/mobile/.expo/

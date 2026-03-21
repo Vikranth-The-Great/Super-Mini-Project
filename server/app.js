@@ -12,7 +12,30 @@ const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+// CORS configuration for web, mobile (local), and production
+const allowedOrigins = [
+  'http://localhost:5173', // Web frontend
+  'http://localhost:3000', // Alternative web port
+  'http://localhost:8081', // Expo dev server
+  'http://10.0.2.2:5000', // Android emulator to host
+  process.env.REACT_APP_URL || null, // Web production
+  process.env.MOBILE_APP_URL || null, // Mobile production
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else if (process.env.NODE_ENV === 'development') {
+      // In development, allow all origins
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Routes

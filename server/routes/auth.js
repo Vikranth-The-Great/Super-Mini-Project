@@ -10,13 +10,30 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+const normalizeGender = (gender) => {
+  if (!gender) return null;
+
+  const value = String(gender).trim().toLowerCase();
+
+  if (value === 'm' || value === 'male') return 'male';
+  if (value === 'f' || value === 'female') return 'female';
+  if (value === 'o' || value === 'other') return 'other';
+
+  return null;
+};
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, gender } = req.body;
+    const normalizedGender = normalizeGender(gender);
 
     if (!name || !email || !password || !gender) {
       return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (!normalizedGender) {
+      return res.status(400).json({ message: 'Invalid gender value' });
     }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
@@ -24,7 +41,7 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ message: 'Email already registered' });
     }
 
-    const user = await User.create({ name, email, password, gender });
+    const user = await User.create({ name, email, password, gender: normalizedGender });
     const token = signToken(user._id);
 
     res.status(201).json({
