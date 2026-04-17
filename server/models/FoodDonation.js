@@ -33,8 +33,8 @@ const foodDonationSchema = new mongoose.Schema(
     distributionEndTime: { type: Date, default: null },
     status: {
       type: String,
-      enum: ['Pending', 'Assigned', 'In Transit', 'Delivered'],
-      default: 'Pending',
+      enum: ['Posted', 'Assigned', 'In Transit', 'Delivered', 'Completed'],
+      default: 'Posted',
     },
   },
   { timestamps: true }

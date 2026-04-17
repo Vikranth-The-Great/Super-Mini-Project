@@ -1,7 +1,7 @@
 const { Server } = require('socket.io');
-const jwt = require('jsonwebtoken');
 const Admin = require('./models/Admin');
 const DeliveryPerson = require('./models/DeliveryPerson');
+const { verifyJwt } = require('./utils/jwt');
 
 let io = null;
 
@@ -21,7 +21,7 @@ const initSocket = (httpServer) => {
       const token = raw.startsWith('Bearer ') ? raw.split(' ')[1] : raw;
       if (!token) return next(new Error('Unauthorized'));
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = verifyJwt(token, process.env.JWT_SECRET);
       socket.user = { id: String(decoded.id), role: decoded.role };
 
       if (decoded.role === 'admin') {

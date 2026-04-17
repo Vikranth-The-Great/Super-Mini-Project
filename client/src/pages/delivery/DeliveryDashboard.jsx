@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import DeliverySidebar from '../../components/DeliverySidebar';
@@ -11,10 +11,12 @@ export default function DeliveryDashboard() {
   const [myRows, setMyRows] = useState([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [takingId, setTakingId] = useState(null);
 
   const auth = { headers: { Authorization: `Bearer ${deliveryToken}` } };
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [av, my] = await Promise.all([
@@ -23,18 +25,34 @@ export default function DeliveryDashboard() {
       ]);
       setRows(av.data);
       setMyRows(my.data);
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not refresh pickups right now.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [deliveryToken]);
 
   useEffect(() => {
     load();
-  }, []);
+    const id = setInterval(() => {
+      load();
+    }, 8000);
+    return () => clearInterval(id);
+  }, [load]);
 
   const takeOrder = async (id) => {
-    await axios.put(`/api/donations/${id}/take`, {}, auth);
-    load();
+    setTakingId(id);
+    setError('');
+    try {
+      await axios.put(`/api/donations/${id}/take`, {}, auth);
+      await load();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not accept this pickup.');
+      await load();
+    } finally {
+      setTakingId(null);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -66,6 +84,7 @@ export default function DeliveryDashboard() {
         </div>
 
         <div className="card">
+          {error && <div className="error-msg">{error}</div>}
           {loading ? (
             <p style={{ color: 'var(--muted)' }}>Loading pickups…</p>
           ) : filtered.length === 0 ? (
@@ -94,7 +113,9 @@ export default function DeliveryDashboard() {
                       <td>{r.address}</td>
                       <td>{r.assignedTo?.address || '-'}</td>
                       <td>
-                        <button className="btn-primary" onClick={() => takeOrder(r._id)}>{t('accept_delivery')}</button>
+                        <button className="btn-primary" onClick={() => takeOrder(r._id)} disabled={takingId === r._id}>
+                          {takingId === r._id ? 'Accepting…' : t('accept_delivery')}
+                        </button>
                       </td>
                     </tr>
                   ))}

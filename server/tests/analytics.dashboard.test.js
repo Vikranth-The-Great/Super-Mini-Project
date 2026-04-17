@@ -1,5 +1,4 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
@@ -8,8 +7,9 @@ const Admin = require('../models/Admin');
 const FoodDonation = require('../models/FoodDonation');
 const User = require('../models/User');
 const Feedback = require('../models/Feedback');
+const { signJwt } = require('../utils/jwt');
 
-const sign = (id, role) => jwt.sign({ id: String(id), role }, process.env.JWT_SECRET || 'testsecret');
+const sign = (id, role) => signJwt({ id: String(id), role }, process.env.JWT_SECRET || 'testsecret');
 
 describe('Analytics dashboard API', () => {
   let mongoServer;
@@ -38,6 +38,7 @@ describe('Analytics dashboard API', () => {
       name: 'Metrics NGO',
       email: 'metrics-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000003001',
       address: 'Metrics office',
       location: 'Indiranagar',
     });

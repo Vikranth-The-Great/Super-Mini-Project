@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useAuth } from '../../context/AuthContext';
@@ -7,26 +7,43 @@ export default function AdminNotifications() {
   const { ngoToken } = useAuth();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [markingAllRead, setMarkingAllRead] = useState(false);
 
   const auth = { headers: { Authorization: `Bearer ${ngoToken}` } };
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const { data } = await axios.get('/api/notifications/my', auth);
       setRows(data);
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not refresh notifications right now.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [ngoToken]);
 
   useEffect(() => {
     load();
-  }, []);
+    const id = setInterval(() => {
+      load();
+    }, 8000);
+    return () => clearInterval(id);
+  }, [load]);
 
   const markAllRead = async () => {
-    await axios.put('/api/notifications/read-all', {}, auth);
-    setRows((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setMarkingAllRead(true);
+    setError('');
+    try {
+      await axios.put('/api/notifications/read-all', {}, auth);
+      setRows((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not mark notifications as read.');
+    } finally {
+      setMarkingAllRead(false);
+    }
   };
 
   return (
@@ -37,10 +54,13 @@ export default function AdminNotifications() {
 
         <div className="card" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
           <p style={{ color: 'var(--muted)' }}>Review missed real-time updates about new donations and delivery activity.</p>
-          <button className="btn-primary" onClick={markAllRead}>Mark All Read</button>
+          <button className="btn-primary" onClick={markAllRead} disabled={markingAllRead}>
+            {markingAllRead ? 'Updating…' : 'Mark All Read'}
+          </button>
         </div>
 
         <div className="card">
+          {error && <div className="error-msg" style={{ marginBottom: '.9rem' }}>{error}</div>}
           {loading ? (
             <p style={{ color: 'var(--muted)' }}>Loading notifications…</p>
           ) : rows.length === 0 ? (

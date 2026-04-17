@@ -20,10 +20,11 @@ const USER_MY_FIELDS =
   'food type category quantity location address latitude longitude createdAt expiryDate expiryTime assignedTo deliveryBy deliveredAt';
 
 const getDonationStatus = (donation) => {
+  if (donation.status === 'Completed') return 'Completed';
   if (donation.deliveredAt) return 'Delivered';
   if (donation.deliveryBy) return 'In Transit';
   if (donation.assignedTo) return 'Assigned';
-  return 'Pending';
+  return 'Posted';
 };
 
 const toNum = (value) => {
@@ -57,6 +58,37 @@ const distanceKm = (lat1, lon1, lat2, lon2) => {
 };
 
 const normalizeText = (value) => String(value || '').trim().toLowerCase();
+
+const trimText = (value) => String(value || '').trim();
+
+const isValidPhone = (value) => /^\d{10}$/.test(String(value || '').trim());
+
+const parsePositiveQuantity = (value) => {
+  const text = trimText(value).toLowerCase();
+  const match = text.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  const num = Number(match[1]);
+  return Number.isFinite(num) && num > 0 ? num : null;
+};
+
+const notExpiredFilterExpr = (now = new Date()) => ({
+  $expr: {
+    $gt: [
+      {
+        $dateFromString: {
+          dateString: {
+            $concat: [
+              { $dateToString: { format: '%Y-%m-%d', date: '$expiryDate' } },
+              'T',
+              '$expiryTime',
+            ],
+          },
+        },
+      },
+      now,
+    ],
+  },
+});
 
 const extractLatLngFromText = (text) => {
   const val = String(text || '');
@@ -381,9 +413,22 @@ const getNgoTrackingRows = async (ngoId) => {
 router.post('/', protect, async (req, res) => {
   try {
     const { food, type, category, quantity, expiryDate, expiryTime, location, address, phoneno } = req.body;
+    const foodText = trimText(food);
+    const quantityText = trimText(quantity);
+    const locationText = trimText(location);
+    const addressText = trimText(address);
+    const phoneText = trimText(phoneno);
 
-    if (!food || !type || !category || !quantity || !expiryDate || !expiryTime || !location || !address || !phoneno) {
+    if (!foodText || !type || !category || !quantityText || !expiryDate || !expiryTime || !locationText || !addressText || !phoneText) {
       return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (!isValidPhone(phoneText)) {
+      return res.status(400).json({ message: 'Phone number must be exactly 10 digits' });
+    }
+
+    if (!parsePositiveQuantity(quantityText)) {
+      return res.status(400).json({ message: 'Quantity must be numeric and greater than 0' });
     }
 
     const coords = parseCoordinates(req.body);
@@ -401,24 +446,43 @@ router.post('/', protect, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const duplicateWindowStart = new Date(Date.now() - 2 * 60 * 1000);
+    const existingDuplicate = await FoodDonation.findOne({
+      donorEmail: user.email,
+      food: foodText,
+      type,
+      category,
+      quantity: quantityText,
+      location: locationText,
+      address: addressText,
+      expiryDate,
+      expiryTime,
+      createdAt: { $gte: duplicateWindowStart },
+    }).select('_id');
+
+    if (existingDuplicate) {
+      return res.status(409).json({ message: 'Duplicate submission detected. Please wait before submitting again.' });
+    }
+
     const donation = await FoodDonation.create({
       donorName: user.name,
       donorEmail: user.email,
-      phoneno,
-      food,
+      phoneno: phoneText,
+      food: foodText,
       type,
       category,
-      quantity,
+      quantity: quantityText,
       expiryDate,
       expiryTime,
-      location,
-      address,
+      location: locationText,
+      address: addressText,
       latitude: coords.latitude,
       longitude: coords.longitude,
+      status: 'Posted',
     });
 
     const recommendedNgo = await recommendNgoForDonation({
-      location,
+      location: locationText,
       latitude: coords.latitude,
       longitude: coords.longitude,
       expiryDate,
@@ -439,8 +503,8 @@ router.post('/', protect, async (req, res) => {
       title: 'New donation nearby',
       message: `New donation from ${user.name} in ${location}.`,
       donationId: donation._id,
-      location,
-      address,
+      location: locationText,
+      address: addressText,
       createdAt: new Date().toISOString(),
     };
 
@@ -451,7 +515,7 @@ router.post('/', protect, async (req, res) => {
           recipientId: ngo.ngoId,
           donationId: donation._id,
           type: 'donation-created',
-          message: `New donation from ${user.name} in ${location}.`,
+          message: `New donation from ${user.name} in ${locationText}.`,
         })
       )
     );
@@ -464,7 +528,7 @@ router.post('/', protect, async (req, res) => {
     });
 
     if (location) {
-      emitNotification(`admin-location:${normalizeText(location)}`, basePayload);
+      emitNotification(`admin-location:${normalizeText(locationText)}`, basePayload);
     }
 
     res.status(201).json({
@@ -608,8 +672,15 @@ router.get('/admin-tracking', protectAdmin, getNgoTracking);
 // PUT /api/donations/:id/assign
 router.put('/:id/assign', protectAdmin, async (req, res) => {
   try {
+    const now = new Date();
     const donation = await FoodDonation.findOneAndUpdate(
-      { _id: req.params.id, assignedTo: null },
+      {
+        _id: req.params.id,
+        assignedTo: null,
+        deliveryBy: null,
+        deliveredAt: null,
+        ...notExpiredFilterExpr(now),
+      },
       {
         $set: {
           assignedTo: req.user.id,
@@ -620,8 +691,13 @@ router.put('/:id/assign', protectAdmin, async (req, res) => {
     );
 
     if (!donation) {
-      const exists = await FoodDonation.findById(req.params.id).select('_id assignedTo');
+      const exists = await FoodDonation.findById(req.params.id).select('_id assignedTo expiryDate expiryTime');
       if (!exists) return res.status(404).json({ message: 'Donation not found' });
+
+      if (!isNotExpired(exists, now)) {
+        return res.status(400).json({ message: 'Food expired' });
+      }
+
       return res.status(409).json({ message: 'This donation has already been claimed by another NGO.' });
     }
 
@@ -787,6 +863,18 @@ router.put('/:id/take', protectDelivery, async (req, res) => {
   try {
     const donation = await FoodDonation.findById(req.params.id);
     if (!donation) return res.status(404).json({ message: 'Donation not found' });
+    if (!donation.assignedTo) {
+      return res.status(400).json({ message: 'Cannot pick unassigned food' });
+    }
+    if (!isNotExpired(donation)) {
+      return res.status(400).json({ message: 'Food expired' });
+    }
+    if (donation.deliveredAt) {
+      return res.status(400).json({ message: 'Order already completed' });
+    }
+    if (donation.status !== 'Assigned') {
+      return res.status(400).json({ message: 'Invalid status flow. Only assigned orders can be picked.' });
+    }
     if (donation.deliveryBy) return res.status(409).json({ message: 'Already taken' });
 
     donation.deliveryBy = req.user.id;
@@ -833,6 +921,12 @@ router.put('/:id/place', protectDelivery, async (req, res) => {
     if (!donation) return res.status(404).json({ message: 'Donation not found' });
     if (String(donation.deliveryBy) !== String(req.user.id)) {
       return res.status(403).json({ message: 'Not your order' });
+    }
+    if (donation.deliveredAt) {
+      return res.status(409).json({ message: 'Order already marked as delivered' });
+    }
+    if (donation.status !== 'In Transit') {
+      return res.status(400).json({ message: 'Invalid status flow. Only picked orders can be delivered.' });
     }
 
     donation.deliveredAt = new Date();

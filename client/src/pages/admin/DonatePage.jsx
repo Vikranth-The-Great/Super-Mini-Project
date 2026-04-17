@@ -16,16 +16,21 @@ export default function DonatePage() {
   const [location, setLocation] = useState('');
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const search = async (e) => {
     e.preventDefault();
     if (!location) return;
     setLoading(true);
+    setError('');
     try {
       const { data } = await axios.get(`/api/donations/by-location?location=${encodeURIComponent(location)}`, {
         headers: { Authorization: `Bearer ${ngoToken}` },
       });
       setRows(data);
+    } catch (err) {
+      setRows([]);
+      setError(err.response?.data?.message || 'Could not search donations right now.');
     } finally {
       setLoading(false);
     }
@@ -57,6 +62,7 @@ export default function DonatePage() {
         </form>
 
         <div className="card">
+          {error && <div className="error-msg" style={{ marginBottom: '.9rem' }}>{error}</div>}
           {!location ? (
             <p style={{ color: 'var(--muted)' }}>Select a location and click Search.</p>
           ) : loading ? (

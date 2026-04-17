@@ -1,5 +1,4 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
@@ -9,8 +8,9 @@ const Admin = require('../models/Admin');
 const DeliveryPerson = require('../models/DeliveryPerson');
 const FoodDonation = require('../models/FoodDonation');
 const Notification = require('../models/Notification');
+const { signJwt } = require('../utils/jwt');
 
-const sign = (id, role) => jwt.sign({ id: String(id), role }, process.env.JWT_SECRET || 'testsecret');
+const sign = (id, role) => signJwt({ id: String(id), role }, process.env.JWT_SECRET || 'testsecret');
 
 describe('Donation lifecycle', () => {
   let mongoServer;
@@ -41,12 +41,15 @@ describe('Donation lifecycle', () => {
       email: 'donor@example.com',
       password: 'pass1234',
       gender: 'male',
+      phoneno: '9000001001',
+      location: 'Indiranagar',
     });
 
     const ngo = await Admin.create({
       name: 'NGO Partner',
       email: 'ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001002',
       address: 'Some NGO address',
       location: 'Indiranagar',
     });
@@ -55,6 +58,7 @@ describe('Donation lifecycle', () => {
       name: 'Delivery One',
       email: 'delivery@example.com',
       password: 'pass1234',
+      phoneno: '9000001003',
       city: 'Bengaluru',
     });
 
@@ -129,12 +133,15 @@ describe('Donation lifecycle', () => {
       email: 'preview-donor@example.com',
       password: 'pass1234',
       gender: 'female',
+      phoneno: '9000001004',
+      location: 'Indiranagar',
     });
 
     await Admin.create({
       name: 'Near NGO',
       email: 'near-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001005',
       location: 'Indiranagar',
       address: 'Near office (Lat: 12.97160, Lng: 77.59460)',
     });
@@ -142,6 +149,7 @@ describe('Donation lifecycle', () => {
       name: 'Second NGO',
       email: 'second-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001006',
       location: 'Indiranagar',
       address: 'Second office (Lat: 12.98160, Lng: 77.60460)',
     });
@@ -149,6 +157,7 @@ describe('Donation lifecycle', () => {
       name: 'Far NGO',
       email: 'far-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001007',
       location: 'Whitefield',
       address: 'Far office (Lat: 13.10000, Lng: 77.80000)',
     });
@@ -156,6 +165,7 @@ describe('Donation lifecycle', () => {
       name: 'Extra NGO',
       email: 'extra-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001008',
       location: 'Koramangala',
       address: 'Extra office (Lat: 12.94000, Lng: 77.62000)',
     });
@@ -190,6 +200,7 @@ describe('Donation lifecycle', () => {
       name: 'Priority NGO',
       email: 'priority-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001009',
       address: 'Priority office',
       location: 'Indiranagar',
     });
@@ -264,6 +275,7 @@ describe('Donation lifecycle', () => {
       name: 'Route NGO',
       email: 'route-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001010',
       address: 'Route office',
       location: 'Indiranagar',
     });
@@ -272,6 +284,7 @@ describe('Donation lifecycle', () => {
       name: 'Route Delivery',
       email: 'route-delivery@example.com',
       password: 'pass1234',
+      phoneno: '9000001011',
       city: 'Bengaluru',
     });
 
@@ -354,12 +367,15 @@ describe('Donation lifecycle', () => {
       email: 'notify-donor@example.com',
       password: 'pass1234',
       gender: 'male',
+      phoneno: '9000001012',
+      location: 'Indiranagar',
     });
 
     const ngo = await Admin.create({
       name: 'Notify NGO',
       email: 'notify-ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000001013',
       address: 'NGO Notify Address',
       location: 'Indiranagar',
     });
@@ -368,6 +384,7 @@ describe('Donation lifecycle', () => {
       name: 'Notify Delivery',
       email: 'notify-delivery@example.com',
       password: 'pass1234',
+      phoneno: '9000001014',
       city: 'Bengaluru',
     });
 

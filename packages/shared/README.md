@@ -1,6 +1,6 @@
 # @food-donation/shared
 
-Shared constants, types, and utilities used by the web and mobile applications.
+Shared constants, types, and utilities used by the web and backend applications.
 
 ## Contents
 
@@ -34,5 +34,5 @@ import { ROLE_USER, API_ROUTES, validateEmail } from '@food-donation/shared';
 ## Integration
 
 This package is imported by:
-- `apps/web/` - React web frontend
-- `apps/mobile/` - React Native mobile app
+- `client/` - React web frontend
+- `server/` - Express backend

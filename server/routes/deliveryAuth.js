@@ -1,35 +1,58 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const DeliveryPerson = require('../models/DeliveryPerson');
 const { protectDelivery } = require('../middleware/auth');
+const { signJwt } = require('../utils/jwt');
 
 const router = express.Router();
 
+const trimText = (value) => String(value || '').trim();
+const isValidPhone = (value) => /^\d{10}$/.test(trimText(value));
+
 const signToken = (id) =>
-  jwt.sign({ id, role: 'delivery' }, process.env.JWT_SECRET, {
+  signJwt({ id, role: 'delivery' }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
 // POST /api/delivery/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, city } = req.body;
+    const { name, email, password, city, phoneno } = req.body;
+    const nameText = trimText(name);
+    const emailText = trimText(email).toLowerCase();
+    const phoneText = trimText(phoneno);
+    const cityText = trimText(city);
 
-    if (!name || !email || !password || !city) {
+    if (!nameText || !emailText || !password || !phoneText || !cityText) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const existing = await DeliveryPerson.findOne({ email: email.toLowerCase() });
+    if (!isValidPhone(phoneText)) {
+      return res.status(400).json({ message: 'Phone number must be exactly 10 digits' });
+    }
+
+    const existing = await DeliveryPerson.findOne({ email: emailText });
     if (existing) {
       return res.status(409).json({ message: 'Email already registered' });
     }
 
-    const person = await DeliveryPerson.create({ name, email, password, city });
+    const person = await DeliveryPerson.create({
+      name: nameText,
+      email: emailText,
+      password,
+      phoneno: phoneText,
+      city: cityText,
+    });
     const token = signToken(person._id);
 
     res.status(201).json({
       token,
-      person: { id: person._id, name: person.name, email: person.email, city: person.city },
+      person: {
+        id: person._id,
+        name: person.name,
+        email: person.email,
+        phoneno: person.phoneno,
+        city: person.city,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -40,12 +63,13 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const emailText = trimText(email).toLowerCase();
 
-    if (!email || !password) {
+    if (!emailText || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const person = await DeliveryPerson.findOne({ email: email.toLowerCase() });
+    const person = await DeliveryPerson.findOne({ email: emailText });
     if (!person) {
       return res.status(404).json({ message: "Account doesn't exist" });
     }
@@ -59,7 +83,13 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      person: { id: person._id, name: person.name, email: person.email, city: person.city },
+      person: {
+        id: person._id,
+        name: person.name,
+        email: person.email,
+        phoneno: person.phoneno,
+        city: person.city,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

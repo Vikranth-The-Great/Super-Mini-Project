@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import AdminSidebar from '../../components/AdminSidebar';
@@ -15,7 +15,7 @@ export default function AdminDashboard() {
 
   const auth = { headers: { Authorization: `Bearer ${ngoToken}` } };
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [donRes, anRes] = await Promise.all([
@@ -28,14 +28,21 @@ export default function AdminDashboard() {
         totalFeedbacks: anRes.data.totalFeedbacks,
         totalDonations: anRes.data.totalDonations,
       });
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not refresh dashboard right now.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [ngoToken]);
 
   useEffect(() => {
     load();
-  }, []);
+    const id = setInterval(() => {
+      load();
+    }, 8000);
+    return () => clearInterval(id);
+  }, [load]);
 
   const claim = async (id) => {
     setError('');

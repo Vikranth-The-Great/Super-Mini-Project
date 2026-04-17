@@ -9,7 +9,7 @@ const CITIES = [
 ];
 
 export default function DeliverySignup() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', city: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', phoneno: '', city: '' });
   const [showPw,  setShowPw]  = useState(false);
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +29,7 @@ export default function DeliverySignup() {
 
     if (form.name.trim().length < 3) return setError('Name must be at least 3 characters.');
     if (form.password.length < 6)    return setError('Password must be at least 6 characters.');
+    if (!/^\d{10}$/.test(form.phoneno)) return setError('Phone number must be exactly 10 digits.');
     if (!form.city)                  return setError('Please choose a city.');
 
     setLoading(true);
@@ -56,6 +57,17 @@ export default function DeliverySignup() {
           <div className="form-group">
             <label>Email</label>
             <input type="email" name="email" value={form.email} onChange={handleChange} required autoComplete="email" />
+          </div>
+          <div className="form-group">
+            <label>Phone Number</label>
+            <input
+              name="phoneno"
+              value={form.phoneno}
+              onChange={handleChange}
+              required
+              pattern="\d{10}"
+              placeholder="10 digit number"
+            />
           </div>
           <div className="form-group">
             <label>Password</label>

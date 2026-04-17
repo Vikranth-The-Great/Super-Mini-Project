@@ -3,8 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
+const AREAS = [
+  'Indiranagar','Koramangala','Whitefield','Jayanagar','Rajajinagar',
+  'Malleshwaram','Yelahanka','Electronic City','Bannerghatta Road','Marathahalli',
+  'HSR Layout','BTM Layout','JP Nagar','Hebbal','Vijayanagar',
+  'Basavanagudi','Sadashivanagar','RT Nagar','Padmanabhanagar','KR Puram',
+];
+
 export default function UserSignup() {
-  const [form,    setForm]    = useState({ name: '', email: '', password: '', gender: '' });
+  const [form,    setForm]    = useState({ name: '', email: '', password: '', gender: '', phoneno: '', location: '' });
   const [showPw,  setShowPw]  = useState(false);
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,6 +27,8 @@ export default function UserSignup() {
     if (form.name.trim().length < 3)      return setError('Name must be at least 3 characters.');
     if (form.password.length < 6)         return setError('Password must be at least 6 characters.');
     if (!form.gender)                     return setError('Please select your gender.');
+    if (!/^\d{10}$/.test(form.phoneno))   return setError('Phone number must be exactly 10 digits.');
+    if (!form.location)                   return setError('Please select your location.');
 
     setLoading(true);
     try {
@@ -48,6 +57,24 @@ export default function UserSignup() {
             <input type="email" name="email" value={form.email} onChange={handleChange} required autoComplete="email" />
           </div>
           <div className="form-group">
+            <label>Phone Number</label>
+            <input
+              name="phoneno"
+              value={form.phoneno}
+              onChange={handleChange}
+              required
+              pattern="\d{10}"
+              placeholder="10 digit number"
+            />
+          </div>
+          <div className="form-group">
+            <label>Location (Area)</label>
+            <select name="location" value={form.location} onChange={handleChange} required>
+              <option value="">-- Select Area --</option>
+              {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
             <label>Password</label>
             <div className="pw-wrap">
               <input
@@ -67,7 +94,7 @@ export default function UserSignup() {
           <div className="form-group">
             <label>Gender</label>
             <div style={{ display: 'flex', gap: '1.5rem', paddingTop: '.3rem' }}>
-              {['male', 'female'].map((g) => (
+              {['male', 'female', 'other'].map((g) => (
                 <label key={g} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer' }}>
                   <input
                     type="radio"

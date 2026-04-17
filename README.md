@@ -1,20 +1,18 @@
 # Food Waste Management System (MERN Monorepo)
 
-A full-stack food donation platform with web, mobile, and backend services.
+A full-stack food donation platform with web and backend services.
 
 ## Tech Stack
 
 - MongoDB
 - Express.js
 - React (Vite)
-- React Native (Expo)
 - Node.js
 
 ## Repository Structure
 
 - `server/` - Express API, MongoDB models, auth, role-based routes
 - `client/` - Web frontend (React + Vite)
-- `apps/mobile/` - Mobile frontend (React Native + Expo)
 - `packages/shared/` - Shared constants, types, and utilities
 
 ## Prerequisites
@@ -65,8 +63,6 @@ JWT_SECRET=change_this_to_a_secure_secret
 JWT_EXPIRES_IN=7d
 ```
 
-3. For mobile app backend URL, update `apps/mobile/src/config/env.ts` with your local machine IP when testing on a real device.
-
 ## Run MongoDB
 
 - Windows:
@@ -109,13 +105,7 @@ npm run dev:web
 npm run dev:server
 ```
 
-- Mobile (Expo):
-
-```bash
-npm run dev:mobile
-```
-
-- Server + Web + Mobile together:
+- Server + Web together:
 
 ```bash
 npm run dev:all
@@ -140,12 +130,6 @@ npm run test
 
 ```bash
 npm run build:web
-```
-
-- Build Android app (Expo EAS):
-
-```bash
-npm run build:mobile
 ```
 
 ## Main API Groups

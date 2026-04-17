@@ -6,6 +6,7 @@ const adminSchema = new mongoose.Schema(
     name:     { type: String, required: true, minlength: 3, trim: true },
     email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
+    phoneno:  { type: String, required: true, trim: true, match: /^\d{10}$/ },
     address:  { type: String, required: true, minlength: 5 },
     location: { type: String, required: true },
   },

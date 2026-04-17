@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
@@ -10,26 +10,33 @@ export default function UserProfile() {
   const [donations, setDonations] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading,   setLoading]   = useState(true);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadPageData = async () => {
-      try {
-        const auth = { headers: { Authorization: `Bearer ${userToken}` } };
-        const [donationsRes, notificationsRes] = await Promise.all([
-          axios.get('/api/donations/my', auth),
-          axios.get('/api/notifications/my', auth),
-        ]);
-        setDonations(donationsRes.data);
-        setNotifications(notificationsRes.data);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadPageData();
+  const loadPageData = useCallback(async () => {
+    try {
+      const auth = { headers: { Authorization: `Bearer ${userToken}` } };
+      const [donationsRes, notificationsRes] = await Promise.all([
+        axios.get('/api/donations/my', auth),
+        axios.get('/api/notifications/my', auth),
+      ]);
+      setDonations(donationsRes.data);
+      setNotifications(notificationsRes.data);
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not refresh profile data right now.');
+    } finally {
+      setLoading(false);
+    }
   }, [userToken]);
+
+  useEffect(() => {
+    loadPageData();
+    const id = setInterval(() => {
+      loadPageData();
+    }, 8000);
+    return () => clearInterval(id);
+  }, [loadPageData]);
 
   const markAllNotificationsRead = async () => {
     try {
@@ -66,6 +73,7 @@ export default function UserProfile() {
 
         {/* Donations table */}
         <div className="card" style={{ marginBottom: '2rem' }}>
+          {error && <div className="error-msg">{error}</div>}
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '.8rem' }}>
             <h3 style={{ marginBottom: 0 }}>🔔 Donation Updates</h3>
             <button className="btn-primary" onClick={markAllNotificationsRead} style={{ padding: '.35rem .8rem' }}>
@@ -131,7 +139,7 @@ export default function UserProfile() {
                       <td>{d.expiryDate?.slice(0,10)} {d.expiryTime}</td>
                       <td>
                         <span className={`pill ${d.deliveredAt ? 'pill-green' : d.deliveryBy ? 'pill-blue' : d.assignedTo ? 'pill-orange' : ''}`}>
-                          {d.deliveredAt ? 'Delivered' : d.deliveryBy ? 'In Transit' : d.assignedTo ? 'Assigned' : 'Pending'}
+                          {d.deliveredAt ? 'Delivered' : d.deliveryBy ? 'In Transit' : d.assignedTo ? 'Assigned' : 'Posted'}
                         </span>
                       </td>
                     </tr>

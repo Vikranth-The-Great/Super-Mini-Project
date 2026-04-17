@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
@@ -21,22 +21,31 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElemen
 export default function Analytics() {
   const { ngoToken } = useAuth();
   const [data, setData] = useState(null);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const load = async () => {
+  const load = useCallback(async () => {
+    try {
       const res = await axios.get('/api/analytics', {
         headers: { Authorization: `Bearer ${ngoToken}` },
       });
       setData(res.data);
-    };
-    load();
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not load analytics right now.');
+    }
   }, [ngoToken]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (!data) {
     return (
       <div className="dashboard-layout">
         <AdminSidebar />
-        <main className="main-content"><p>Loading analytics...</p></main>
+        <main className="main-content">
+          {error ? <div className="error-msg">{error}</div> : <p>Loading analytics...</p>}
+        </main>
       </div>
     );
   }
@@ -87,7 +96,7 @@ export default function Analytics() {
         <div className="stats-grid">
           <Stat label="Total Donations" value={data.totalDonations} />
           <Stat label="Delivered Orders" value={data.totalDeliveredOrders} />
-          <Stat label="Pending Orders" value={data.totalPendingOrders} />
+          <Stat label="Active Orders" value={data.totalPendingOrders} />
           <Stat
             label="Total Food Saved"
             value={`${data.environmentalImpact?.totalFoodSavedKg ?? 0} kg`}

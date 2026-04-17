@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import DeliverySidebar from '../../components/DeliverySidebar';
 import { useAuth } from '../../context/AuthContext';
@@ -9,27 +9,46 @@ export default function MyOrders() {
   const [query, setQuery] = useState('');
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [placingId, setPlacingId] = useState(null);
 
   const auth = { headers: { Authorization: `Bearer ${deliveryToken}` } };
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const { data } = await axios.get('/api/donations/my-deliveries', auth);
       setRows(data);
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not refresh your orders right now.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [deliveryToken]);
 
   useEffect(() => {
     load();
-  }, []);
+    const id = setInterval(() => {
+      load();
+    }, 8000);
+    return () => clearInterval(id);
+  }, [load]);
 
   const place = async (id) => {
-    await axios.put(`/api/donations/${id}/place`, {}, auth);
-    setMsg('Order marked as placed successfully.');
-    load();
+    setError('');
+    setMsg('');
+    setPlacingId(id);
+    try {
+      await axios.put(`/api/donations/${id}/place`, {}, auth);
+      setMsg('Order marked as placed successfully.');
+      await load();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not mark this order as placed.');
+      await load();
+    } finally {
+      setPlacingId(null);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -54,6 +73,7 @@ export default function MyOrders() {
         </div>
 
         {msg && <div className="success-msg">{msg}</div>}
+        {error && <div className="error-msg">{error}</div>}
 
         <div className="card" style={{ marginBottom: '1rem' }}>
           <input placeholder="Search my orders..." value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -100,7 +120,9 @@ export default function MyOrders() {
                         </td>
                         <td>
                           {!r.deliveredAt && (
-                            <button className="btn-primary" onClick={() => place(r._id)}>Order Placed</button>
+                            <button className="btn-primary" onClick={() => place(r._id)} disabled={placingId === r._id}>
+                              {placingId === r._id ? 'Updating…' : 'Order Placed'}
+                            </button>
                           )}
                         </td>
                       </tr>

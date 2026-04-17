@@ -17,7 +17,6 @@ This installs:
 - Root dependencies
 - Server dependencies  
 - Web frontend dependencies
-- Mobile app dependencies
 - Shared package dependencies
 
 ### 3. Configure Backend
@@ -48,7 +47,7 @@ mongod
 npm run dev
 ```
 
-**Option B: All three (web + backend + mobile)**
+**Option B: Web + Backend (same as Option A)**
 ```bash
 npm run dev:all
 ```
@@ -59,11 +58,6 @@ npm run dev:all
 - Sign up as a user
 - Create a donation
 - See it on the dashboard
-
-**Mobile** (if running):
-- Scan QR code with Expo Go app
-- Sign up with same credentials
-- See same donation on mobile
 
 ### ✅ You're Done!
 
@@ -95,12 +89,6 @@ export default defineConfig({
     port: 3000, // Change port here
   },
 });
-```
-
-### Mobile: Point to Your Backend
-Edit `apps/mobile/src/config/env.ts`:
-```typescript
-const API_BASE_URL = 'http://192.168.1.100:5000/api'; // Your IP
 ```
 
 ---
@@ -139,14 +127,6 @@ npm install
 cd ..
 ```
 
-### Mobile Won't Connect
-1. Check backend is running: `curl http://localhost:5000/api/health`
-2. Update `EXPO_PUBLIC_API_URL` in `apps/mobile/.env.local`
-3. For Android emulator: use `http://10.0.2.2:5000/api`
-4. For physical device: use your IP like `http://192.168.1.100:5000/api`
-
----
-
 ## Project Scripts Reference
 
 ```bash
@@ -157,12 +137,10 @@ npm install              # Install all dependencies
 npm run dev             # Web + Backend (most common)
 npm run dev:web        # Web only
 npm run dev:server     # Backend only
-npm run dev:mobile     # Mobile dev
-npm run dev:all        # All three
+npm run dev:all        # Web + backend
 
 # Building
 npm run build:web      # Build web for production
-npm run build:mobile   # Build mobile APK
 
 # Testing
 npm run test           # Run all tests
@@ -179,15 +157,9 @@ npm run test:server    # Server tests only
 - Both watch for file changes
 - Both reload automatically
 
-### `npm run dev:mobile`
-- Starts Expo development server
-- Shows QR code in terminal
-- Scan with Expo Go app on phone
-- Reloads on file changes
-
 ### `npm run dev:all`
-- Runs all three in parallel with `concurrently`
-- Check all three ports are free before running
+- Runs web + backend in parallel with `concurrently`
+- Check both ports are free before running
 
 ---
 
@@ -195,7 +167,6 @@ npm run test:server    # Server tests only
 
 1. **Explore the codebase:**
    - Web: `client/src/pages/` → `client/src/context/AuthContext.jsx`
-   - Mobile: `apps/mobile/src/screens/` → `apps/mobile/src/context/AuthContext.tsx`
    - Shared: `packages/shared/src/constants/`
 
 2. **Understand the auth flow:**
@@ -209,13 +180,12 @@ npm run test:server    # Server tests only
 
 4. **Add your first feature:**
    - Create endpoint in `server/routes/`
-   - Add API call in `web/` or `mobile/`
+   - Add API call in `client/`
    - Add screen/component to show it
 
 5. **Deploy when ready:**
    - Web: Vercel, Netlify
    - Server: Heroku, Railway, AWS
-   - Mobile: EAS Build, Google Play Store
 
 ---
 
@@ -224,7 +194,6 @@ npm run test:server    # Server tests only
 1. Check individual READMEs:
    - `server/README.md`
    - `client/README.md`
-   - `apps/mobile/README.md`
    - `packages/shared/README.md`
 
 2. Read the full guide: `README_FULL.md`
@@ -232,8 +201,6 @@ npm run test:server    # Server tests only
 3. Check backend logs for errors
 
 4. Use browser DevTools for frontend issues
-
-5. Use Expo console (`expo logs`) for mobile issues
 
 ---
 

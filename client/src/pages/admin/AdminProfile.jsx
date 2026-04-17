@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useAuth } from '../../context/AuthContext';
@@ -7,20 +7,29 @@ export default function AdminProfile() {
   const { ngoToken } = useAuth();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    try {
+      const { data } = await axios.get('/api/donations/ngo-tracking', {
+        headers: { Authorization: `Bearer ${ngoToken}` },
+      });
+      setRows(data);
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not refresh NGO tracking right now.');
+    } finally {
+      setLoading(false);
+    }
+  }, [ngoToken]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const { data } = await axios.get('/api/donations/ngo-tracking', {
-          headers: { Authorization: `Bearer ${ngoToken}` },
-        });
-        setRows(data);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
-  }, [ngoToken]);
+    const id = setInterval(() => {
+      load();
+    }, 8000);
+    return () => clearInterval(id);
+  }, [load]);
 
   return (
     <div className="dashboard-layout">
@@ -28,6 +37,7 @@ export default function AdminProfile() {
       <main className="main-content">
         <h1 style={{ marginBottom: '1rem' }}>📍 NGO Order Tracking</h1>
         <div className="card">
+          {error && <div className="error-msg">{error}</div>}
           {loading ? (
             <p style={{ color: 'var(--muted)' }}>Loading…</p>
           ) : rows.length === 0 ? (

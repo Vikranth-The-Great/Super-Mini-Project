@@ -1,13 +1,13 @@
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const app = require('../app');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
+const { signJwt } = require('../utils/jwt');
 
-const sign = (id, role) => jwt.sign({ id: String(id), role }, process.env.JWT_SECRET || 'testsecret');
+const sign = (id, role) => signJwt({ id: String(id), role }, process.env.JWT_SECRET || 'testsecret');
 
 describe('Role authorization checks', () => {
   let mongoServer;
@@ -32,6 +32,8 @@ describe('Role authorization checks', () => {
       email: 'simple.user@example.com',
       password: 'pass1234',
       gender: 'female',
+      phoneno: '9000002001',
+      location: 'Indiranagar',
     });
 
     const userToken = sign(user._id, 'user');
@@ -48,6 +50,7 @@ describe('Role authorization checks', () => {
       name: 'Compat NGO',
       email: 'compat.ngo@example.com',
       password: 'pass1234',
+      phoneno: '9000002002',
       address: 'NGO Address 1',
       location: 'Koramangala',
     };

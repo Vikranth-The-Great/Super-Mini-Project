@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema(
     email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
     gender:   { type: String, enum: ['male', 'female', 'other'], required: true },
+    phoneno:  { type: String, required: true, trim: true, match: /^\d{10}$/ },
+    location: { type: String, required: true, trim: true },
   },
   { timestamps: true }
 );
