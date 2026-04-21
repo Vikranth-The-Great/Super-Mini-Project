@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useTranslation } from 'react-i18next';
 
 const BENGALURU_FALLBACK = [12.9716, 77.5946];
 
@@ -31,9 +32,10 @@ function pickBestArea(addressObj, options) {
 export default function LocationAssistant({
   areaOptions = [],
   onResolved,
-  title = 'Location Assistant',
-  helperText = 'Share live location or click on map to choose a location manually.',
+  title,
+  helperText,
 }) {
+  const { t } = useTranslation();
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
@@ -43,9 +45,12 @@ export default function LocationAssistant({
   const [status, setStatus] = useState('');
   const [resolvedAddress, setResolvedAddress] = useState('');
 
+  const resolvedTitle = title || t('location_assistant_title');
+  const resolvedHelperText = helperText || t('location_assistant_helper');
+
   const resolveCoordinates = async (latitude, longitude, source) => {
     setResolving(true);
-    setStatus('Resolving selected coordinates...');
+    setStatus(t('location_status_resolving'));
 
     try {
       const response = await fetch(
@@ -55,8 +60,8 @@ export default function LocationAssistant({
       const address = data.display_name || '';
       const area = pickBestArea(data.address || {}, areaOptions);
 
-      setResolvedAddress(address || 'Address unavailable');
-      setStatus(source === 'gps' ? 'Live location captured.' : 'Map location captured.');
+      setResolvedAddress(address || t('location_address_unavailable'));
+      setStatus(source === 'gps' ? t('location_status_live_captured') : t('location_status_map_captured'));
 
       onResolved?.({
         latitude,
@@ -65,7 +70,7 @@ export default function LocationAssistant({
         address,
       });
     } catch {
-      setStatus('Could not fetch address details for selected coordinates.');
+      setStatus(t('location_status_fetch_failed'));
     } finally {
       setResolving(false);
     }
@@ -73,11 +78,11 @@ export default function LocationAssistant({
 
   const handleUseLiveLocation = () => {
     if (!navigator.geolocation) {
-      setStatus('Geolocation is not supported in this browser.');
+      setStatus(t('location_status_not_supported'));
       return;
     }
 
-    setStatus('Requesting location permission...');
+    setStatus(t('location_status_request_permission'));
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
@@ -90,7 +95,7 @@ export default function LocationAssistant({
 
         await resolveCoordinates(latitude, longitude, 'gps');
       },
-      () => setStatus('Location permission denied. You can still choose manually on map.'),
+      () => setStatus(t('location_status_permission_denied')),
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
@@ -121,15 +126,15 @@ export default function LocationAssistant({
 
   return (
     <div className="location-assistant">
-      <h4>{title}</h4>
-      <p>{helperText}</p>
+      <h4>{resolvedTitle}</h4>
+      <p>{resolvedHelperText}</p>
 
       <div className="location-assistant-actions">
         <button type="button" className="btn-secondary" onClick={handleUseLiveLocation} disabled={resolving}>
-          {resolving ? 'Fetching...' : 'Share Live Location'}
+          {resolving ? t('location_fetching') : t('location_share_live')}
         </button>
         <button type="button" className="btn-secondary" onClick={() => setShowMap((v) => !v)}>
-          {showMap ? 'Hide Map' : 'Point on Map'}
+          {showMap ? t('location_hide_map') : t('location_point_on_map')}
         </button>
       </div>
 

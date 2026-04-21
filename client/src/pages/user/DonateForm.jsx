@@ -61,11 +61,11 @@ export default function DonateForm() {
     const now = new Date();
     const expiryDT = new Date(`${form.expiryDate}T${form.expiryTime}`);
     if (!form.expiryTime || expiryDT <= now) {
-      return setError('Expiry date and time must be in the future.');
+      return setError(t('donate_error_expiry_future'));
     }
 
     if (!/^\d{10}$/.test(form.phoneno)) {
-      return setError('Phone number must be exactly 10 digits.');
+      return setError(t('donate_error_phone_digits'));
     }
 
     setLoading(true);
@@ -77,7 +77,7 @@ export default function DonateForm() {
         state: { recommendedNgo: data?.recommendedNgo || null },
       });
     } catch (err) {
-      setError(err.response?.data?.message || 'Submission failed. Please try again.');
+      setError(err.response?.data?.message || t('donate_error_submit_failed'));
     } finally {
       setLoading(false);
     }
@@ -95,22 +95,22 @@ export default function DonateForm() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
                 <label>{t('food_name')}</label>
-                <input name="food" value={form.food} onChange={handleChange} required placeholder="e.g. Rice, Biryani…" />
+                <input name="food" value={form.food} onChange={handleChange} required placeholder={t('donate_placeholder_food')} />
               </div>
               <div className="form-group">
                 <label>{t('quantity')}</label>
-                <input name="quantity" value={form.quantity} onChange={handleChange} required placeholder="e.g. 5 kg, 10 plates" />
+                <input name="quantity" value={form.quantity} onChange={handleChange} required placeholder={t('donate_placeholder_quantity')} />
               </div>
             </div>
 
             {/* Meal type */}
             <div className="form-group">
-              <label>Meal Type</label>
+              <label>{t('donate_meal_type')}</label>
               <div style={{ display: 'flex', gap: '1.5rem', paddingTop: '.3rem' }}>
-                {['veg', 'non-veg'].map((t) => (
-                  <label key={t} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer' }}>
-                    <input type="radio" name="type" value={t} checked={form.type === t} onChange={handleChange} style={{ width: 'auto' }} />
-                    {t === 'veg' ? '🥦 Veg' : '🍗 Non-Veg'}
+                {['veg', 'non-veg'].map((mealType) => (
+                  <label key={mealType} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', cursor: 'pointer' }}>
+                    <input type="radio" name="type" value={mealType} checked={form.type === mealType} onChange={handleChange} style={{ width: 'auto' }} />
+                    {mealType === 'veg' ? `🥦 ${t('veg')}` : `🍗 ${t('non_veg')}`}
                   </label>
                 ))}
               </div>
@@ -118,12 +118,12 @@ export default function DonateForm() {
 
             {/* Category */}
             <div className="form-group">
-              <label>Category</label>
+              <label>{t('category')}</label>
               <div style={{ display: 'flex', gap: '1rem', paddingTop: '.3rem', flexWrap: 'wrap' }}>
                 {[
-                  { val: 'raw-food',    label: '🌾 Raw Food' },
-                  { val: 'cooked-food', label: '🍲 Cooked Food' },
-                  { val: 'packed-food', label: '📦 Packed Food' },
+                  { val: 'raw-food',    label: `🌾 ${t('raw_ingredients')}` },
+                  { val: 'cooked-food', label: `🍲 ${t('cooked_food')}` },
+                  { val: 'packed-food', label: `📦 ${t('packaged_food')}` },
                 ].map(({ val, label }) => (
                   <label
                     key={val}
@@ -159,28 +159,28 @@ export default function DonateForm() {
               </div>
               <div className="form-group">
                 <label>{t('phone')}</label>
-                <input name="phoneno" value={form.phoneno} onChange={handleChange} required pattern="\d{10}" placeholder="10 digit number" />
+                <input name="phoneno" value={form.phoneno} onChange={handleChange} required pattern="\d{10}" placeholder={t('donate_placeholder_phone')} />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Area / Location</label>
+              <label>{t('donate_area_location')}</label>
               <select name="location" value={form.location} onChange={handleChange} required>
-                <option value="">-- Select Area --</option>
+                <option value="">{t('donate_select_area')}</option>
                 {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
 
             <div className="form-group">
-              <label>Full Address</label>
-              <textarea name="address" rows={3} value={form.address} onChange={handleChange} required placeholder="House/flat number, street, landmark…" />
+              <label>{t('donate_full_address')}</label>
+              <textarea name="address" rows={3} value={form.address} onChange={handleChange} required placeholder={t('donate_placeholder_address')} />
             </div>
 
             <LocationAssistant
               areaOptions={AREAS}
               onResolved={handleLocationResolved}
-              title="Pickup Location"
-              helperText="Use your current location or pin the exact pickup point on map."
+              title={t('donate_pickup_location')}
+              helperText={t('donate_pickup_helper')}
             />
 
             <button className="btn-primary" type="submit" disabled={loading} style={{ width: '100%', padding: '.75rem', fontSize: '1rem' }}>

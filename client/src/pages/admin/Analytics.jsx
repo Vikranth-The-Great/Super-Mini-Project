@@ -15,11 +15,13 @@ import {
 } from 'chart.js';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function Analytics() {
   const { ngoToken } = useAuth();
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
 
@@ -31,9 +33,9 @@ export default function Analytics() {
       setData(res.data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not load analytics right now.');
+      setError(err.response?.data?.message || t('analytics_load_failed'));
     }
-  }, [ngoToken]);
+  }, [ngoToken, t]);
 
   useEffect(() => {
     load();
@@ -44,7 +46,7 @@ export default function Analytics() {
       <div className="dashboard-layout">
         <AdminSidebar />
         <main className="main-content">
-          {error ? <div className="error-msg">{error}</div> : <p>Loading analytics...</p>}
+          {error ? <div className="error-msg">{error}</div> : <p>{t('analytics_loading')}</p>}
         </main>
       </div>
     );
@@ -54,7 +56,7 @@ export default function Analytics() {
     labels: data.donationsPerDay.map((x) => x.date),
     datasets: [
       {
-        label: 'Donations',
+        label: t('analytics_donations'),
         data: data.donationsPerDay.map((x) => x.count),
         backgroundColor: '#2e7d32',
       },
@@ -65,7 +67,7 @@ export default function Analytics() {
     labels: data.categoryDistribution.map((x) => x.category),
     datasets: [
       {
-        label: 'Food Categories',
+        label: t('analytics_food_categories'),
         data: data.categoryDistribution.map((x) => x.count),
         backgroundColor: ['#ef5350', '#ffa726', '#66bb6a', '#42a5f5', '#ab47bc', '#26c6da'],
         borderWidth: 1,
@@ -77,7 +79,7 @@ export default function Analytics() {
     labels: data.deliverySuccessRate.map((x) => x.date),
     datasets: [
       {
-        label: 'Delivery Success Rate (%)',
+        label: t('analytics_success_rate_label'),
         data: data.deliverySuccessRate.map((x) => x.rate),
         borderColor: '#1e88e5',
         backgroundColor: 'rgba(30, 136, 229, 0.2)',
@@ -91,35 +93,35 @@ export default function Analytics() {
     <div className="dashboard-layout">
       <AdminSidebar />
       <main className="main-content">
-        <h1 style={{ marginBottom: '1rem' }}>📊 Analytics</h1>
+        <h1 style={{ marginBottom: '1rem' }}>📊 {t('analytics')}</h1>
 
         <div className="stats-grid">
-          <Stat label="Total Donations" value={data.totalDonations} />
-          <Stat label="Delivered Orders" value={data.totalDeliveredOrders} />
-          <Stat label="Active Orders" value={data.totalPendingOrders} />
+          <Stat label={t('total_donations')} value={data.totalDonations} />
+          <Stat label={t('analytics_delivered_orders')} value={data.totalDeliveredOrders} />
+          <Stat label={t('analytics_active_orders')} value={data.totalPendingOrders} />
           <Stat
-            label="Total Food Saved"
+            label={t('food_saved')}
             value={`${data.environmentalImpact?.totalFoodSavedKg ?? 0} kg`}
           />
           <Stat
-            label="CO2 Emissions Prevented"
+            label={t('co2_prevented')}
             value={`${data.environmentalImpact?.totalCo2PreventedKg ?? 0} kg`}
           />
           <Stat
-            label="Meals Served"
+            label={t('meals_served')}
             value={data.environmentalImpact?.mealsServedEquivalent ?? 0}
           />
           <Stat
-            label="Most Donated Category"
-            value={data.mostDonatedFoodCategory?.category || 'N/A'}
+            label={t('analytics_most_donated_category')}
+            value={data.mostDonatedFoodCategory?.category || t('analytics_na')}
           />
-          <Stat label="Total Users" value={data.totalUsers} />
-          <Stat label="Feedbacks" value={data.totalFeedbacks} />
+          <Stat label={t('total_users')} value={data.totalUsers} />
+          <Stat label={t('feedbacks')} value={data.totalFeedbacks} />
         </div>
 
         <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
           <div className="card">
-            <h3 style={{ marginBottom: '1rem' }}>Donations Per Day</h3>
+            <h3 style={{ marginBottom: '1rem' }}>{t('analytics_donations_per_day')}</h3>
             <Bar
               data={donationsPerDayChart}
               options={{ responsive: true, plugins: { legend: { display: false } } }}
@@ -127,12 +129,12 @@ export default function Analytics() {
           </div>
 
           <div className="card">
-            <h3 style={{ marginBottom: '1rem' }}>Food Category Share</h3>
+            <h3 style={{ marginBottom: '1rem' }}>{t('analytics_food_category_share')}</h3>
             <Pie data={categoryChart} options={{ responsive: true }} />
           </div>
 
           <div className="card" style={{ gridColumn: '1 / -1' }}>
-            <h3 style={{ marginBottom: '1rem' }}>Delivery Success Rate</h3>
+            <h3 style={{ marginBottom: '1rem' }}>{t('analytics_delivery_success_rate')}</h3>
             <Line
               data={successRateChart}
               options={{
