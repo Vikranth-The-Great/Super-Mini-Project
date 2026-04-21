@@ -2,15 +2,11 @@
 
 ## Project Overview
 
-Food Waste Management System is a full-stack web application for coordinating food donations between donors, NGOs, and delivery partners. The current repository is focused on the web frontend, Node.js backend, and a shared package for constants, types, and validation helpers.
+Food Waste Management System is now a browser-only web application for coordinating food donations between donors, NGO/admin users, and delivery partners.
 
-The project is organized as a monorepo with three active workspaces:
+The current runtime is centered on the React + Vite client and a structured localStorage-backed browser store.
 
-- `server/` for the Express API, MongoDB models, authentication, donation lifecycle logic, notifications, analytics, and tests.
-- `client/` for the React + Vite web application.
-- `packages/shared/` for reusable constants, routes, types, validation helpers, and formatting utilities.
-
-The mobile implementation was removed from this workspace. All documentation, scripts, and runtime behavior now reflect the web + backend scope only.
+Historical backend and shared-package notes remain below for migration context only.
 
 ## Project Goals
 
@@ -27,26 +23,16 @@ The application is designed to support the full food donation lifecycle:
 
 ### Stack
 
-- Frontend: React 19, React Router, Vite, axios, i18next, Chart.js, Leaflet, socket.io-client.
-- Backend: Node.js, Express, Mongoose, Socket.IO, JWT authentication.
-- Database: MongoDB.
-- Testing: Jest, Supertest, MongoMemoryServer.
-- Shared layer: TypeScript constants, route maps, validation helpers, and data types.
-
-### Monorepo Layout
-
-- `client/` contains the web UI and client-side business logic.
-- `server/` contains API routes, data models, socket integration, middleware, and tests.
-- `packages/shared/` contains shared contracts used by both client and server.
+- Frontend: React 19, React Router, Vite, i18next, Chart.js, Leaflet.
+- Storage: Browser localStorage with structured JSON state.
+- Testing: Browser and UI validation only.
 
 ### Runtime Pattern
 
-- The browser communicates with the API through `/api` endpoints.
-- Authentication is token-based.
-- The client stores tokens in browser storage through the auth context.
-- The server verifies tokens with a local JWT utility.
-- Notifications are propagated through Socket.IO and persisted in MongoDB.
-- The UI uses polling in several dashboards to keep data current.
+- The browser reads and writes directly to the local data store.
+- Authentication is session-like and persisted in browser storage.
+- Notifications, donation history, and analytics are derived from the stored JSON state.
+- The UI refreshes state from the browser store after actions and reloads.
 
 ## Core User Roles
 
@@ -254,9 +240,9 @@ File: `server/models/Feedback.js`
 
 Feedback supports user messages and admin review flows.
 
-## Shared Package
+## Historical Shared Package
 
-The shared package prevents duplication and keeps the client and server aligned.
+The shared package was used to prevent duplication when the repository still had a backend.
 
 ### Constants
 
@@ -278,7 +264,7 @@ The shared package prevents duplication and keeps the client and server aligned.
 - `packages/shared/src/types/donation.ts` describes donation data structures.
 - `packages/shared/src/types/notification.ts` describes notification payloads.
 
-## API Surface
+## Historical API Surface
 
 ### Authentication Endpoints
 
@@ -347,9 +333,9 @@ The donation flow is the heart of the application.
 8. Donation becomes `Delivered`.
 9. Final completion is recorded as `Completed` where applicable.
 
-### Server Enforcement
+### Browser Enforcement
 
-The backend validates:
+The browser store validates:
 
 - Required fields.
 - Phone number format.
@@ -460,7 +446,7 @@ Donation submission requires:
 - Buttons show loading states while actions are in progress.
 - Errors are surfaced instead of failing silently.
 
-## Backend Features
+## Historical Backend Features
 
 ### Authentication
 
@@ -511,10 +497,10 @@ The implementation work in this repository followed a safety-first, checklist-dr
 
 ### Design Principles
 
-- Prefer server-side enforcement for critical rules.
-- Mirror server constraints in the client UI.
+- Prefer local store enforcement for critical rules.
+- Mirror store constraints in the client UI.
 - Avoid silent failures.
-- Make status text match actual backend state.
+- Make status text match actual stored state.
 - Keep route aliases when needed for backward compatibility.
 - Use shared constants and helpers instead of duplicating strings and rules.
 
@@ -532,7 +518,7 @@ The implementation work in this repository followed a safety-first, checklist-dr
 
 ### Automated Tests
 
-The backend uses Jest and Supertest for route-level validation.
+The browser-only version uses client-side checks and manual validation of stored state.
 
 Important test coverage includes:
 
@@ -566,26 +552,17 @@ Root scripts currently supported:
 
 ## Environment Setup
 
-### Required Environment Variables
-
-Server configuration is defined in `server/.env.example` and should include:
-
-- `MONGODB_URI`
-- `PORT`
-- `JWT_SECRET`
-- `JWT_EXPIRES_IN`
-
 ### Development Assumptions
 
-- MongoDB is available locally.
-- The backend listens on port 5000 by default.
-- The web frontend runs on port 5173 by default.
+- The frontend runs on port 5173 by default.
+- Browser storage is available for persistence.
+- No server process is required for runtime.
 
 ## Important Constraints
 
-- The repository is web + backend only.
+- The repository is frontend-only.
 - Mobile-specific code, scripts, and references were removed.
-- Phone number validation is enforced as exactly 10 digits.
+- Phone number validation is enforced as exactly 10 digits where used.
 - Food expiry cannot be bypassed.
 - Only one NGO can claim a donation at a time.
 - Delivery actions must follow the valid order flow.
@@ -594,7 +571,7 @@ Server configuration is defined in `server/.env.example` and should include:
 ## Current Known Status
 
 - The web build is passing.
-- The server tests are passing.
+- The browser-only architecture is the current target.
 - The mobile implementation is removed.
 - The codebase is aligned with the current checklist expectations.
 

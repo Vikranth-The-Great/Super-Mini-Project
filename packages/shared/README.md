@@ -1,38 +1,16 @@
 # @food-donation/shared
 
-Shared constants, types, and utilities used by the web and backend applications.
+Legacy shared constants, types, and utilities retained for reference.
+
+This package is no longer imported by the runtime application.
 
 ## Contents
 
-### Constants
+- constants for roles, statuses, field names, and legacy API routes
+- types for auth, donation, and notification shapes
+- helpers for validation, formatting, and error parsing
 
-- **roles.ts**: User role constants (user, admin, delivery)
-- **apiRoutes.ts**: API endpoint paths
-- **donationStatus.ts**: Donation status values and helpers
-- **errors.ts**: Error messages and codes
-- **fieldNames.ts**: Form field names and labels
+## Notes
 
-### Types
-
-- **auth.ts**: Authentication-related types
-- **donation.ts**: Donation model types
-- **notification.ts**: Notification model types
-
-### Utilities
-
-- **validation.ts**: Input validation functions
-- **formatters.ts**: Data formatting functions
-- **errorParsing.ts**: Error handling and parsing
-
-## Usage
-
-```typescript
-// Import from shared package
-import { ROLE_USER, API_ROUTES, validateEmail } from '@food-donation/shared';
-```
-
-## Integration
-
-This package is imported by:
-- `client/` - React web frontend
-- `server/` - Express backend
+- The browser app now uses the client-side browser store directly.
+- API route helpers are historical and should not be used for new work.

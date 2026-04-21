@@ -57,6 +57,7 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="/"           element={<IndexPage />} />
+        <Route path="/preview/user-home" element={<HomePage />} />
         <Route path="/home"       element={<ProtectedUser><HomePage /></ProtectedUser>} />
         <Route path="/about"      element={<AboutProject />} />
         <Route path="/contact"    element={<ContactPage />} />

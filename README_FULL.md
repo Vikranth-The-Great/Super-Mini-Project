@@ -1,9 +1,10 @@
 ﻿# Food Waste Management System - Full Guide
 
-This repository now contains:
-- server/ (Express API + MongoDB)
-- client/ (React web app)
-- packages/shared/ (shared constants/types/utils)
+This repository is browser-only. All persistence, authentication, donation tracking, notifications, and analytics are handled in the client with localStorage.
+
+## Repository Layout
+
+- client/ - React + Vite web app
 
 ## Run Locally
 
@@ -11,36 +12,32 @@ This repository now contains:
 
 ```bash
 npm install
-npm run install:all
 ```
 
-2. Start MongoDB.
-
-3. Start web + server:
+2. Start the web app:
 
 ```bash
 npm run dev
 ```
 
-4. Build web app:
+3. Build or preview the production bundle:
 
 ```bash
 npm run build:web
+npm run preview:web
 ```
 
-5. Run server tests:
+## Architecture Notes
 
-```bash
-npm run test:server
-```
+- No backend server is required.
+- No MongoDB or environment file is required for runtime.
+- App state is stored in localStorage under a structured JSON record.
+- Demo seed data is created automatically if storage is empty.
 
-## Environment
+## Core Flows
 
-Server variables are documented in:
-- server/.env.example
-- apps/server/.env.example
-
-## Notes
-
-- The codebase is web + backend focused.
-- Shared utilities are located in packages/shared.
+- Users, NGO/admin users, and delivery partners sign up and sign in locally.
+- Donors create donations and see their own history and notifications.
+- NGO users claim available donations and review analytics.
+- Delivery partners accept assigned pickups and complete deliveries.
+- Public food availability and feedback are stored in the browser.

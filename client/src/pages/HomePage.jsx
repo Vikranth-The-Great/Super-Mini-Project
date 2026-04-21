@@ -15,22 +15,24 @@ export default function HomePage() {
           Every plate counts. Donate surplus food and we'll make sure it reaches someone who truly
           needs it — fresh, fast, and with care.
         </p>
-        <Link to="/donate">
-          <button className="btn-primary" style={{ padding: '.75rem 2rem', fontSize: '1.05rem' }}>
-            Donate Food Now
-          </button>
-        </Link>
-        <Link to="/find-food" style={{ marginTop: '.8rem', display: 'inline-block' }}>
-          <button className="btn-secondary" style={{ padding: '.65rem 1.6rem', fontSize: '.98rem' }}>
-            Find Free Food Near You
-          </button>
-        </Link>
+        <div className="hero-cta-row">
+          <Link to="/donate">
+            <button className="btn-primary hero-cta-primary">
+              Donate Food Now
+            </button>
+          </Link>
+          <Link to="/find-food">
+            <button className="btn-secondary hero-cta-secondary">
+              Find Free Food Near You
+            </button>
+          </Link>
+        </div>
       </section>
 
       {/* Impact */}
       <section className="page-container">
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--green)' }}>Our Impact</h2>
-        <div className="stats-grid" style={{ maxWidth: 700, margin: '0 auto' }}>
+        <h2 className="impact-title">Our Impact</h2>
+        <div className="stats-grid impact-wrap">
           <div className="stat-box"><h3>500+</h3><p>Meals Donated</p></div>
           <div className="stat-box"><h3>50+</h3><p>Volunteers</p></div>
           <div className="stat-box"><h3>20+</h3><p>Locations Covered</p></div>
@@ -38,10 +40,10 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section style={{ background: '#e8f5e9', padding: '3rem 1rem' }}>
-        <div className="page-container" style={{ maxWidth: 900 }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Doorstep Pickup</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+      <section className="steps-section">
+        <div className="page-container">
+          <h2 className="impact-title">Doorstep Pickup</h2>
+          <div className="steps-grid">
             <Step num="1" title="Fill Donation Form" desc="Provide food details, quantity, expiry, and your address." />
             <Step num="2" title="NGO Reviews"       desc="A local NGO partner claims your donation and schedules a pickup." />
             <Step num="3" title="Delivery Partner"  desc="A delivery volunteer picks it up from your doorstep." />
@@ -58,19 +60,12 @@ export default function HomePage() {
 
 function Step({ num, title, desc }) {
   return (
-    <div className="card" style={{ textAlign: 'center' }}>
-      <div
-        style={{
-          width: 48, height: 48, borderRadius: '50%',
-          background: 'var(--green)', color: 'white',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.3rem', fontWeight: 700, margin: '0 auto 1rem',
-        }}
-      >
+    <div className="card step-card">
+      <div className="step-badge">
         {num}
       </div>
-      <h4 style={{ marginBottom: '.4rem' }}>{title}</h4>
-      <p style={{ color: 'var(--muted)', fontSize: '.9rem' }}>{desc}</p>
+      <h4>{title}</h4>
+      <p>{desc}</p>
     </div>
   );
 }

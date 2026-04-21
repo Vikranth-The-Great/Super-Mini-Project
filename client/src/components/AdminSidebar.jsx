@@ -20,8 +20,8 @@ export default function AdminSidebar() {
       <Link to="/ngo/feedback">Feedback</Link>
       <Link to="/ngo/notifications">Notifications</Link>
       <button
+        className="sidebar-logout"
         onClick={handleLogout}
-        style={{ marginTop: 'auto', background: '#e53935', color: 'white', width: '100%', borderRadius: 8 }}
       >
         Logout
       </button>
