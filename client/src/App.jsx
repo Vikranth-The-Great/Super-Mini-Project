@@ -6,6 +6,7 @@ import HomePage         from './pages/HomePage';
 import AboutProject     from './pages/AboutProject';
 import ContactPage      from './pages/ContactPage';
 import FindFood         from './pages/FindFood';
+import SystemAdminDashboard from './pages/systemAdmin/SystemAdminDashboard';
 
 // User auth & features
 import UserLogin        from './pages/user/UserLogin';
@@ -62,6 +63,7 @@ export default function App() {
         <Route path="/about"      element={<AboutProject />} />
         <Route path="/contact"    element={<ContactPage />} />
         <Route path="/find-food"  element={<FindFood />} />
+        <Route path="/system-admin" element={<SystemAdminDashboard />} />
 
         {/* User auth */}
         <Route path="/signin"     element={<UserLogin />} />

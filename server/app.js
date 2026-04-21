@@ -9,6 +9,7 @@ const ngoRoutes = require('./routes/ngos');
 const feedbackRoutes = require('./routes/feedback');
 const analyticsRoutes = require('./routes/analytics');
 const notificationRoutes = require('./routes/notifications');
+const systemAdminRoutes = require('./routes/systemAdmin');
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/ngos', ngoRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/system-admin', systemAdminRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

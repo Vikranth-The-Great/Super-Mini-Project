@@ -30,11 +30,11 @@ export default function AdminDashboard() {
       });
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not refresh dashboard right now.');
+      setError(err.response?.data?.message || t('ngo_dashboard_load_failed'));
     } finally {
       setLoading(false);
     }
-  }, [ngoToken]);
+  }, [ngoToken, t]);
 
   useEffect(() => {
     load();
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
       await axios.put(`/api/donations/${id}/assign`, {}, auth);
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not claim this donation. Please try again.');
+      setError(err.response?.data?.message || t('ngo_dashboard_claim_failed'));
       await load();
     } finally {
       setClaimingId(null);
@@ -73,9 +73,9 @@ export default function AdminDashboard() {
         <div className="card">
           {error && <div className="error-msg">{error}</div>}
           {loading ? (
-            <p style={{ color: 'var(--muted)' }}>Loading donations…</p>
+            <p style={{ color: 'var(--muted)' }}>{t('loading')}</p>
           ) : rows.length === 0 ? (
-            <p style={{ color: 'var(--muted)' }}>No unassigned non-expired donations available.</p>
+            <p style={{ color: 'var(--muted)' }}>{t('ngo_dashboard_no_donations')}</p>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table>
@@ -85,12 +85,12 @@ export default function AdminDashboard() {
                     <th>{t('food_name')}</th>
                     <th>{t('category')}</th>
                     <th>{t('phone')}</th>
-                    <th>Date/Time</th>
+                    <th>{t('date_time')}</th>
                     <th>{t('expiry_time')}</th>
-                    <th>Priority</th>
+                    <th>{t('priority')}</th>
                     <th>{t('address')}</th>
                     <th>{t('quantity')}</th>
-                    <th>Action</th>
+                    <th>{t('action')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -127,6 +127,7 @@ export default function AdminDashboard() {
 }
 
 function PriorityTag({ priority }) {
+  const { t } = useTranslation();
   const tone =
     priority === 'High'
       ? { bg: '#fdecec', fg: '#b71c1c' }
@@ -146,7 +147,7 @@ function PriorityTag({ priority }) {
         color: tone.fg,
       }}
     >
-      {priority || 'Low'}
+      {priority ? t(`priority_${priority.toLowerCase()}`) : t('priority_low')}
     </span>
   );
 }

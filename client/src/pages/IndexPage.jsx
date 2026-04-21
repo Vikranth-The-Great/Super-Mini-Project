@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 export default function IndexPage() {
   return (
     <div className="landing-shell">
+      <Link to="/system-admin" className="landing-admin-login">
+        Admin
+      </Link>
+
       <div className="landing-orb landing-orb-left" aria-hidden="true" />
       <div className="landing-orb landing-orb-right" aria-hidden="true" />
 
@@ -26,7 +30,7 @@ export default function IndexPage() {
         />
         <RoleCard
           icon="Delivery"
-          title="Delivery"
+          title="Volunteer"
           desc="Pick up and deliver food to those in need."
           to="/delivery/login"
         />

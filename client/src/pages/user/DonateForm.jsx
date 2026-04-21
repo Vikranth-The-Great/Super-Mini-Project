@@ -7,13 +7,6 @@ import Footer from '../../components/Footer';
 import { useAuth } from '../../context/AuthContext';
 import LocationAssistant from '../../components/LocationAssistant';
 
-const AREAS = [
-  'Indiranagar','Koramangala','Whitefield','Jayanagar','Rajajinagar',
-  'Malleshwaram','Yelahanka','Electronic City','Bannerghatta Road','Marathahalli',
-  'HSR Layout','BTM Layout','JP Nagar','Hebbal','Vijayanagar',
-  'Basavanagudi','Sadashivanagar','RT Nagar','Padmanabhanagar','KR Puram',
-];
-
 export default function DonateForm() {
   const { user, userToken } = useAuth();
   const { t } = useTranslation();
@@ -39,7 +32,33 @@ export default function DonateForm() {
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === 'quantity') {
+      if (value === '') {
+        setForm((prev) => ({ ...prev, quantity: '' }));
+        setError('');
+        return;
+      }
+
+      if (!/^\d*(?:\.\d*)?$/.test(value)) {
+        return;
+      }
+
+      const quantityNum = Number.parseFloat(value);
+      if (Number.isFinite(quantityNum) && quantityNum > 10) {
+        setError(t('donate_error_quantity_max'));
+        return;
+      }
+
+      setError((prev) => (prev === t('donate_error_quantity_max') ? '' : prev));
+      setForm((prev) => ({ ...prev, quantity: value }));
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleLocationResolved = ({ area, address, latitude, longitude }) => {
     setForm((prev) => ({
@@ -66,6 +85,18 @@ export default function DonateForm() {
 
     if (!/^\d{10}$/.test(form.phoneno)) {
       return setError(t('donate_error_phone_digits'));
+    }
+
+    const quantityNum = Number.parseFloat(String(form.quantity || '').trim());
+    if (!Number.isFinite(quantityNum) || quantityNum <= 0) {
+      return setError(t('donate_error_quantity_numeric'));
+    }
+    if (quantityNum > 10) {
+      return setError(t('donate_error_quantity_max'));
+    }
+
+    if (!form.location || !form.address) {
+      return setError('Please share live location or select a point on map before submitting.');
     }
 
     setLoading(true);
@@ -99,7 +130,18 @@ export default function DonateForm() {
               </div>
               <div className="form-group">
                 <label>{t('quantity')}</label>
-                <input name="quantity" value={form.quantity} onChange={handleChange} required placeholder={t('donate_placeholder_quantity')} />
+                <input
+                  name="quantity"
+                  type="number"
+                  min="0.1"
+                  max="10"
+                  step="0.1"
+                  value={form.quantity}
+                  onChange={handleChange}
+                  onInput={handleChange}
+                  required
+                  placeholder={t('donate_placeholder_quantity')}
+                />
               </div>
             </div>
 
@@ -164,20 +206,11 @@ export default function DonateForm() {
             </div>
 
             <div className="form-group">
-              <label>{t('donate_area_location')}</label>
-              <select name="location" value={form.location} onChange={handleChange} required>
-                <option value="">{t('donate_select_area')}</option>
-                {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
-
-            <div className="form-group">
               <label>{t('donate_full_address')}</label>
               <textarea name="address" rows={3} value={form.address} onChange={handleChange} required placeholder={t('donate_placeholder_address')} />
             </div>
 
             <LocationAssistant
-              areaOptions={AREAS}
               onResolved={handleLocationResolved}
               title={t('donate_pickup_location')}
               helperText={t('donate_pickup_helper')}

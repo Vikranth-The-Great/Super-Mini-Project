@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminProfile() {
   const { ngoToken } = useAuth();
+  const { t } = useTranslation();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,11 +19,11 @@ export default function AdminProfile() {
       setRows(data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not refresh NGO tracking right now.');
+      setError(err.response?.data?.message || t('ngo_tracking_load_failed'));
     } finally {
       setLoading(false);
     }
-  }, [ngoToken]);
+  }, [ngoToken, t]);
 
   useEffect(() => {
     load();
@@ -35,28 +37,28 @@ export default function AdminProfile() {
     <div className="dashboard-layout">
       <AdminSidebar />
       <main className="main-content">
-        <h1 style={{ marginBottom: '1rem' }}>📍 NGO Order Tracking</h1>
+        <h1 style={{ marginBottom: '1rem' }}>📍 {t('ngo_order_tracking')}</h1>
         <div className="card">
           {error && <div className="error-msg">{error}</div>}
           {loading ? (
-            <p style={{ color: 'var(--muted)' }}>Loading…</p>
+            <p style={{ color: 'var(--muted)' }}>{t('loading')}</p>
           ) : rows.length === 0 ? (
-            <p style={{ color: 'var(--muted)' }}>No assigned donations to track yet.</p>
+            <p style={{ color: 'var(--muted)' }}>{t('ngo_tracking_no_orders')}</p>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table>
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Food</th>
-                    <th>Category</th>
-                    <th>Phone</th>
-                    <th>Date/Time</th>
-                    <th>Address</th>
-                    <th>Quantity</th>
-                    <th>Delivery Partner</th>
-                    <th>Placed At</th>
-                    <th>Status</th>
+                    <th>{t('name')}</th>
+                    <th>{t('food_name')}</th>
+                    <th>{t('category')}</th>
+                    <th>{t('phone')}</th>
+                    <th>{t('date_time')}</th>
+                    <th>{t('address')}</th>
+                    <th>{t('quantity')}</th>
+                    <th>{t('delivery_partner')}</th>
+                    <th>{t('placed_at')}</th>
+                    <th>{t('status')}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useAuth } from '../../context/AuthContext';
 import LocationAssistant from '../../components/LocationAssistant';
@@ -13,6 +14,7 @@ const AREAS = [
 
 export default function DonatePage() {
   const { ngoToken } = useAuth();
+  const { t } = useTranslation();
   const [location, setLocation] = useState('');
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,7 @@ export default function DonatePage() {
       setRows(data);
     } catch (err) {
       setRows([]);
-      setError(err.response?.data?.message || 'Could not search donations right now.');
+      setError(err.response?.data?.message || t('ngo_location_search_failed'));
     } finally {
       setLoading(false);
     }
@@ -40,13 +42,13 @@ export default function DonatePage() {
     <div className="dashboard-layout">
       <AdminSidebar />
       <main className="main-content">
-        <h1 style={{ marginBottom: '1rem' }}>📍 Donations by Location</h1>
+        <h1 style={{ marginBottom: '1rem' }}>📍 {t('ngo_donations_by_location')}</h1>
 
         <form onSubmit={search} className="card" style={{ marginBottom: '1rem', maxWidth: 520 }}>
           <div className="form-group">
-            <label>Select Area</label>
+            <label>{t('donate_area_location')}</label>
             <select value={location} onChange={(e) => setLocation(e.target.value)} required>
-              <option value="">-- Select Area --</option>
+              <option value="">{t('donate_select_area')}</option>
               {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>
@@ -54,34 +56,34 @@ export default function DonatePage() {
           <LocationAssistant
             areaOptions={AREAS}
             onResolved={({ area }) => area && setLocation(area)}
-            title="Find Area Quickly"
-            helperText="Share live location or point on map to auto-select area."
+            title={t('ngo_find_area_quickly')}
+            helperText={t('ngo_find_area_helper')}
           />
 
-          <button className="btn-primary" type="submit" disabled={loading}>{loading ? 'Searching…' : 'Search'}</button>
+          <button className="btn-primary" type="submit" disabled={loading}>{loading ? t('searching') : t('search')}</button>
         </form>
 
         <div className="card">
           {error && <div className="error-msg" style={{ marginBottom: '.9rem' }}>{error}</div>}
           {!location ? (
-            <p style={{ color: 'var(--muted)' }}>Select a location and click Search.</p>
+            <p style={{ color: 'var(--muted)' }}>{t('ngo_select_location_search')}</p>
           ) : loading ? (
-            <p style={{ color: 'var(--muted)' }}>Loading…</p>
+            <p style={{ color: 'var(--muted)' }}>{t('loading')}</p>
           ) : rows.length === 0 ? (
-            <p style={{ color: 'var(--muted)' }}>No results found for selected location.</p>
+            <p style={{ color: 'var(--muted)' }}>{t('ngo_location_no_results')}</p>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table>
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Food</th>
-                    <th>Category</th>
-                    <th>Phone</th>
-                    <th>Date/Time</th>
-                    <th>Expiry</th>
-                    <th>Address</th>
-                    <th>Quantity</th>
+                    <th>{t('name')}</th>
+                    <th>{t('food_name')}</th>
+                    <th>{t('category')}</th>
+                    <th>{t('phone')}</th>
+                    <th>{t('date_time')}</th>
+                    <th>{t('expiry')}</th>
+                    <th>{t('address')}</th>
+                    <th>{t('quantity')}</th>
                   </tr>
                 </thead>
                 <tbody>

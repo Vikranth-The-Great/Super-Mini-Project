@@ -16,6 +16,10 @@ function pickBestArea(addressObj, options) {
     addressObj.county,
   ].filter(Boolean);
 
+  if (!options.length) {
+    return candidates[0] || '';
+  }
+
   for (const candidate of candidates) {
     const found = options.find((opt) => opt.toLowerCase() === String(candidate).toLowerCase());
     if (found) return found;

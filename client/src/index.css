@@ -851,6 +851,125 @@ input:focus, select:focus, textarea:focus {
   line-height: 1.45;
 }
 
+.landing-admin-login {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 3;
+  font-size: 0.98rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.56rem 1.18rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.landing-admin-login:hover {
+  background: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
+}
+
+.system-admin-shell {
+  min-height: 100vh;
+  padding: 1.4rem;
+  background: linear-gradient(180deg, #f6f9f7 0%, #edf3f0 100%);
+}
+
+.system-admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.system-admin-header h1 {
+  margin-bottom: 0.35rem;
+}
+
+.system-admin-header p {
+  color: var(--muted);
+}
+
+.system-admin-back {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.system-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(420px, 1.65fr);
+  gap: 1rem;
+}
+
+.system-admin-feed h2,
+.system-admin-table-wrap h2 {
+  margin-bottom: 0.7rem;
+}
+
+.system-admin-feed-list {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 62vh;
+  overflow-y: auto;
+}
+
+.system-admin-feed-item {
+  border: 1px solid #e3ebe6;
+  border-left: 4px solid #2d8a57;
+  border-radius: 10px;
+  padding: 0.65rem;
+  background: #fff;
+}
+
+.system-admin-feed-msg {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.system-admin-feed-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.system-admin-status {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.admin-status-posted {
+  color: #1157cf;
+  background: #deebff;
+}
+
+.admin-status-claimed {
+  color: #9b4e00;
+  background: #ffeacf;
+}
+
+.admin-status-picked {
+  color: #5a2ea6;
+  background: #ece1ff;
+}
+
+.admin-status-delivered {
+  color: #1d6b35;
+  background: #dff7e7;
+}
+
+.admin-status-expired {
+  color: #a32020;
+  background: #ffe0e0;
+}
+
 .find-food-link {
   margin-top: 1.5rem;
 }
@@ -1058,5 +1177,15 @@ tr:hover td {
 
   .chatbot-box {
     width: min(92vw, 340px);
+  }
+
+  .system-admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .system-admin-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { emitNotification } = require('../socket');
 const { protect, protectAdmin, protectDelivery } = require('../middleware/auth');
+const { logAdminEvent } = require('../utils/adminActivity');
 
 const router = express.Router();
 
@@ -69,6 +70,12 @@ const parsePositiveQuantity = (value) => {
   if (!match) return null;
   const num = Number(match[1]);
   return Number.isFinite(num) && num > 0 ? num : null;
+};
+
+const normalizeQuantityText = (value) => {
+  const amount = parsePositiveQuantity(value);
+  if (!amount) return '';
+  return Number.isInteger(amount) ? String(amount) : String(amount);
 };
 
 const notExpiredFilterExpr = (now = new Date()) => ({
@@ -415,6 +422,8 @@ router.post('/', protect, async (req, res) => {
     const { food, type, category, quantity, expiryDate, expiryTime, location, address, phoneno } = req.body;
     const foodText = trimText(food);
     const quantityText = trimText(quantity);
+    const quantityValue = parsePositiveQuantity(quantityText);
+    const normalizedQuantityText = normalizeQuantityText(quantityText);
     const locationText = trimText(location);
     const addressText = trimText(address);
     const phoneText = trimText(phoneno);
@@ -427,8 +436,12 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'Phone number must be exactly 10 digits' });
     }
 
-    if (!parsePositiveQuantity(quantityText)) {
+    if (!quantityValue) {
       return res.status(400).json({ message: 'Quantity must be numeric and greater than 0' });
+    }
+
+    if (quantityValue > 10) {
+      return res.status(400).json({ message: 'Quantity cannot exceed 10 kg' });
     }
 
     const coords = parseCoordinates(req.body);
@@ -452,7 +465,7 @@ router.post('/', protect, async (req, res) => {
       food: foodText,
       type,
       category,
-      quantity: quantityText,
+      quantity: normalizedQuantityText,
       location: locationText,
       address: addressText,
       expiryDate,
@@ -471,7 +484,7 @@ router.post('/', protect, async (req, res) => {
       food: foodText,
       type,
       category,
-      quantity: quantityText,
+      quantity: normalizedQuantityText,
       expiryDate,
       expiryTime,
       location: locationText,
@@ -530,6 +543,8 @@ router.post('/', protect, async (req, res) => {
     if (location) {
       emitNotification(`admin-location:${normalizeText(locationText)}`, basePayload);
     }
+
+    await logAdminEvent('FOOD_POSTED', donation._id);
 
     res.status(201).json({
       id: donation._id,
@@ -732,6 +747,8 @@ router.put('/:id/assign', protectAdmin, async (req, res) => {
       audience: 'delivery',
     });
 
+    await logAdminEvent('FOOD_CLAIMED', donation._id);
+
     res.json({ message: 'Donation claimed successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -907,6 +924,9 @@ router.put('/:id/take', protectDelivery, async (req, res) => {
       message: 'Your donation has been picked by a delivery partner.',
     });
 
+    await logAdminEvent('VOLUNTEER_ASSIGNED', donation._id);
+    await logAdminEvent('FOOD_PICKED', donation._id);
+
     res.json({ message: 'Order taken successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -958,6 +978,8 @@ router.put('/:id/place', protectDelivery, async (req, res) => {
       type: 'delivered',
       message: 'Your donation has been delivered successfully. Thank you for your support.',
     });
+
+    await logAdminEvent('FOOD_DELIVERED', donation._id);
 
     res.json({ message: 'Order marked as placed successfully' });
   } catch (err) {

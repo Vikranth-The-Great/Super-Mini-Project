@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminNotifications() {
   const { ngoToken } = useAuth();
+  const { t } = useTranslation();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,11 +21,11 @@ export default function AdminNotifications() {
       setRows(data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not refresh notifications right now.');
+      setError(err.response?.data?.message || t('ngo_notifications_load_failed'));
     } finally {
       setLoading(false);
     }
-  }, [ngoToken]);
+  }, [ngoToken, t]);
 
   useEffect(() => {
     load();
@@ -40,7 +42,7 @@ export default function AdminNotifications() {
       await axios.put('/api/notifications/read-all', {}, auth);
       setRows((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not mark notifications as read.');
+      setError(err.response?.data?.message || t('ngo_notifications_mark_failed'));
     } finally {
       setMarkingAllRead(false);
     }
@@ -50,21 +52,21 @@ export default function AdminNotifications() {
     <div className="dashboard-layout">
       <AdminSidebar />
       <main className="main-content">
-        <h1 style={{ marginBottom: '1rem' }}>🔔 NGO Notifications</h1>
+        <h1 style={{ marginBottom: '1rem' }}>🔔 {t('notifications')}</h1>
 
         <div className="card" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-          <p style={{ color: 'var(--muted)' }}>Review missed real-time updates about new donations and delivery activity.</p>
+          <p style={{ color: 'var(--muted)' }}>{t('ngo_notifications_helper')}</p>
           <button className="btn-primary" onClick={markAllRead} disabled={markingAllRead}>
-            {markingAllRead ? 'Updating…' : 'Mark All Read'}
+            {markingAllRead ? t('updating') : t('mark_all_read')}
           </button>
         </div>
 
         <div className="card">
           {error && <div className="error-msg" style={{ marginBottom: '.9rem' }}>{error}</div>}
           {loading ? (
-            <p style={{ color: 'var(--muted)' }}>Loading notifications…</p>
+            <p style={{ color: 'var(--muted)' }}>{t('notifications_loading')}</p>
           ) : rows.length === 0 ? (
-            <p style={{ color: 'var(--muted)' }}>No notifications yet.</p>
+            <p style={{ color: 'var(--muted)' }}>{t('no_notifications')}</p>
           ) : (
             <div style={{ display: 'grid', gap: '.55rem' }}>
               {rows.map((n) => (
